@@ -54,8 +54,7 @@ export function ClassPlanDetail({ planId }: ClassPlanDetailProps) {
         return "bg-emerald-100 text-emerald-700 border-emerald-200"
       case "Wunda Chair":
         return "bg-amber-100 text-amber-700 border-amber-200"
-      case "Cadillac Tower":
-      case "Cadillac":
+      case "Cadillac/Tower":
         return "bg-purple-100 text-purple-700 border-purple-200"
       case "Mixed":
         return "bg-slate-100 text-slate-700 border-slate-200"

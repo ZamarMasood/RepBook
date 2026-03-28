@@ -421,7 +421,7 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
           {/* Filters */}
           <div className="space-y-2">
             <div className="flex flex-wrap gap-1.5">
-              {["All", "Reformer", "Mat", "Wunda Chair", "Cadillac Tower"].map(
+              {["All", "Reformer", "Mat", "Wunda Chair", "Cadillac/Tower"].map(
                 (a) => (
                   <button
                     key={a}

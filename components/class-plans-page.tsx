@@ -48,8 +48,7 @@ export function ClassPlansPage() {
         return "bg-emerald-100 text-emerald-700 border-emerald-200"
       case "Wunda Chair":
         return "bg-amber-100 text-amber-700 border-amber-200"
-      case "Cadillac Tower":
-      case "Cadillac":
+      case "Cadillac/Tower":
         return "bg-purple-100 text-purple-700 border-purple-200"
       case "Mixed":
         return "bg-slate-100 text-slate-700 border-slate-200"
@@ -92,22 +91,20 @@ export function ClassPlansPage() {
 
       {/* Apparatus Filter */}
       <div className="flex flex-wrap gap-2 mb-8">
-        {["All", "Reformer", "Mat", "Wunda Chair", "Cadillac", "Mixed"].map(
-          (apparatus) => (
-            <button
-              key={apparatus}
-              onClick={() => setApparatusFilter(apparatus)}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
-                apparatusFilter === apparatus
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              {apparatus}
-            </button>
-          )
-        )}
+        {apparatusOptions.map((apparatus) => (
+          <button
+            key={apparatus}
+            onClick={() => setApparatusFilter(apparatus)}
+            className={cn(
+              "px-4 py-1.5 rounded-full text-sm font-medium transition-colors",
+              apparatusFilter === apparatus
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            {apparatus}
+          </button>
+        ))}
       </div>
 
       {/* Plans Grid */}

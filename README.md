@@ -69,4 +69,4 @@ lib/
 
 - Data is stored in memory using Zustand (no backend persistence)
 - Spring colors: Red, Blue, Green, Yellow, White, Light (L)
-- Apparatus types: Reformer, Mat, Wunda Chair, Cadillac Tower, Ladder Barrel
+- Apparatus types: Reformer, Mat, Wunda Chair, Cadillac/Tower, Ladder Barrel

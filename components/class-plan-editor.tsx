@@ -213,10 +213,7 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
       {/* Main Editor */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border bg-background">
-          <span className="text-sm text-muted-foreground">
-            {classExercises.length} {classExercises.length === 1 ? "exercise" : "exercises"}
-          </span>
+        <div className="flex items-center justify-end p-4 border-b border-border bg-background">
           <div className="flex items-center gap-3">
             <Link href="/class-plans">
               <Button variant="outline">Cancel</Button>
@@ -303,9 +300,14 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
 
           {/* Class Exercises */}
           <div>
-            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-              Class Exercises
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Class Exercises
+              </h2>
+              <span className="text-sm text-muted-foreground">
+                {classExercises.length} {classExercises.length === 1 ? "exercise" : "exercises"}
+              </span>
+            </div>
 
             {classExercises.length === 0 ? (
               <div className="border-2 border-dashed border-border rounded-xl p-12 text-center bg-card">
@@ -381,57 +383,58 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                           <div className="space-y-2">
                             {settingsOptions.length > 0 && (
                               <>
-                                {(classEx.springs || []).map((spring, springIndex) => (
-                                  <div key={springIndex} className="flex items-center gap-1">
-                                    {isReformer && springColorMap[spring.color] && (
-                                      <span className={cn("w-3 h-3 rounded-full shrink-0", springColorMap[spring.color])} />
-                                    )}
-                                    <Select
-                                      value={spring.color}
-                                      onValueChange={(v) => {
-                                        const newSprings = [...(classEx.springs || [])]
-                                        newSprings[springIndex] = { ...spring, color: v }
-                                        updateExerciseSprings(index, newSprings)
-                                      }}
-                                    >
-                                      <SelectTrigger className="h-7 text-xs flex-1">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {settingsOptions.map((c) => (
-                                          <SelectItem key={c} value={c}>
-                                            <span className="flex items-center gap-2">
-                                              {isReformer && springColorMap[c] && (
-                                                <span className={cn("w-2.5 h-2.5 rounded-full", springColorMap[c])} />
-                                              )}
-                                              {c}
-                                            </span>
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                    <Input
-                                      type="number"
-                                      value={spring.count}
-                                      onChange={(e) => {
-                                        const newSprings = [...(classEx.springs || [])]
-                                        newSprings[springIndex] = { ...spring, count: parseInt(e.target.value) || 1 }
-                                        updateExerciseSprings(index, newSprings)
-                                      }}
-                                      className="w-10 h-7 text-xs text-center"
-                                      min={1}
-                                    />
-                                    <button
-                                      onClick={() => {
-                                        const newSprings = (classEx.springs || []).filter((_, i) => i !== springIndex)
-                                        updateExerciseSprings(index, newSprings)
-                                      }}
-                                      className="p-0.5 rounded hover:bg-muted text-muted-foreground"
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </button>
-                                  </div>
-                                ))}
+{(classEx.springs || []).map((spring, springIndex) => (
+                                                  <div key={springIndex} className="flex items-center gap-1">
+                                                    <Select
+                                                      value={spring.color}
+                                                      onValueChange={(v) => {
+                                                        const newSprings = [...(classEx.springs || [])]
+                                                        newSprings[springIndex] = { ...spring, color: v }
+                                                        updateExerciseSprings(index, newSprings)
+                                                      }}
+                                                    >
+                                                      <SelectTrigger className="h-7 text-xs flex-1">
+                                                        <SelectValue />
+                                                      </SelectTrigger>
+                                                      <SelectContent>
+                                                        {settingsOptions.map((c) => (
+                                                          <SelectItem key={c} value={c}>
+                                                            <span className="flex items-center gap-2">
+                                                              {isReformer && c !== "Classical" && springColorMap[c] && (
+                                                                <span className={cn("w-2.5 h-2.5 rounded-full", springColorMap[c])} />
+                                                              )}
+                                                              {c}
+                                                            </span>
+                                                          </SelectItem>
+                                                        ))}
+                                                      </SelectContent>
+                                                    </Select>
+                                                    {isReformer && (
+                                                      <input
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        pattern="[0-9]*"
+                                                        value={spring.count}
+                                                        onChange={(e) => {
+                                                          const val = parseInt(e.target.value) || 1
+                                                          const newSprings = [...(classEx.springs || [])]
+                                                          newSprings[springIndex] = { ...spring, count: val }
+                                                          updateExerciseSprings(index, newSprings)
+                                                        }}
+                                                        className="w-10 h-7 text-xs text-center border border-input rounded-md bg-background [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                      />
+                                                    )}
+                                                    <button
+                                                      onClick={() => {
+                                                        const newSprings = (classEx.springs || []).filter((_, i) => i !== springIndex)
+                                                        updateExerciseSprings(index, newSprings)
+                                                      }}
+                                                      className="p-0.5 rounded hover:bg-muted text-muted-foreground"
+                                                    >
+                                                      <X className="h-3 w-3" />
+                                                    </button>
+                                                  </div>
+                                                ))}
                                 <button
                                   onClick={() => {
                                     const defaultSetting = settingsOptions[0] || "Red"
@@ -453,15 +456,15 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                                   {settingsLabel}
                                 </p>
                                 <div className="space-y-0.5">
-                                  {classEx.springs!.map((spring, i) => (
-                                    <span key={i} className="flex items-center gap-1.5 text-sm font-medium">
-                                      {isReformer && springColorMap[spring.color] && (
-                                        <span className={cn("w-2.5 h-2.5 rounded-full", springColorMap[spring.color])} />
-                                      )}
-                                      <span>{spring.count}</span>
-                                      <span className="text-foreground">{spring.color}</span>
-                                    </span>
-                                  ))}
+{classEx.springs!.map((spring, i) => (
+                                                    <span key={i} className="flex items-center gap-1.5 text-sm font-medium">
+                                                      {isReformer && spring.color !== "Classical" && springColorMap[spring.color] && (
+                                                        <span className={cn("w-2.5 h-2.5 rounded-full", springColorMap[spring.color])} />
+                                                      )}
+                                                      {isReformer && <span>{spring.count}</span>}
+                                                      <span className="text-foreground">{spring.color}</span>
+                                                    </span>
+                                                  ))}
                                 </div>
                               </>
                             ) : (

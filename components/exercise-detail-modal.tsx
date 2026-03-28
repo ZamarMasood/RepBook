@@ -39,7 +39,7 @@ export function ExerciseDetailModal({
 
   return (
     <Dialog open={!!exercise} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto p-8">
         <DialogDescription className="sr-only">
           Exercise details for {exercise.name}
         </DialogDescription>
@@ -58,7 +58,7 @@ export function ExerciseDetailModal({
           </Button>
         </DialogHeader>
 
-        <div className="space-y-6 pt-2">
+        <div className="space-y-6 pt-4">
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>

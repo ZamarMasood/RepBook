@@ -44,7 +44,7 @@ export function getApparatusSettingsLabel(apparatus: string): string {
     case "Mat":
       return "Props"
     case "Cadillac/Tower":
-      return "Equipment"
+      return "Springs"
     default:
       return "Settings"
   }

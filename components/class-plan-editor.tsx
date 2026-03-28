@@ -409,7 +409,7 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                                                         ))}
                                                       </SelectContent>
                                                     </Select>
-                                                    {isReformer && (
+                                                    {(isReformer || exercise.apparatus === "Wunda Chair") && (
                                                       <input
                                                         type="text"
                                                         inputMode="numeric"
@@ -461,7 +461,7 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                                                       {isReformer && spring.color !== "Classical" && springColorMap[spring.color] && (
                                                         <span className={cn("w-2.5 h-2.5 rounded-full", springColorMap[spring.color])} />
                                                       )}
-                                                      {isReformer && <span>{spring.count}</span>}
+                                                      {(isReformer || exercise.apparatus === "Wunda Chair") && <span>{spring.count}</span>}
                                                       <span className="text-foreground">{spring.color}</span>
                                                     </span>
                                                   ))}

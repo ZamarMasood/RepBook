@@ -113,7 +113,7 @@ export function ClassPlansPage() {
           <Link key={plan.id} href={`/class-plans/${plan.id}`}>
             <Card className="h-full hover:border-primary/30 hover:shadow-md transition-all cursor-pointer group">
               <CardContent className="px-5 py-3">
-                <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center justify-between mb-4">
                   <Badge
                     variant="outline"
                     className={cn("text-xs", getApparatusBadgeClass(plan.apparatus))}
@@ -135,7 +135,7 @@ export function ClassPlansPage() {
                   </button>
                 </div>
 
-                <h3 className="font-semibold text-foreground mb-2 leading-tight">
+                <h3 className="font-semibold text-foreground mb-2 leading-tight text-lg">
                   {plan.name}
                 </h3>
 

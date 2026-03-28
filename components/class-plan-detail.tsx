@@ -174,10 +174,7 @@ export function ClassPlanDetail({ planId }: ClassPlanDetailProps) {
             return (
               <div
                 key={index}
-                className={cn(
-                  "bg-card border border-border rounded-lg overflow-hidden border-l-4",
-                  getAccentBorderClass(exercise.apparatus)
-                )}
+                className="bg-card border border-border rounded-lg overflow-hidden"
               >
                 {/* Main Row */}
                 <div

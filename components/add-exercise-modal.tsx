@@ -355,7 +355,7 @@ export function AddExerciseModal({
               Props
             </Label>
             <Select value={props || "none"} onValueChange={(v) => setProps(v === "none" ? "" : v)}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="None" />
               </SelectTrigger>
               <SelectContent>

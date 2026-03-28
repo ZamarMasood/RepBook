@@ -9,7 +9,6 @@ import {
   levelOptions, 
   getApparatusSettings, 
   getApparatusSettingsLabel,
-  reformerSprings,
   type Spring, 
   type ClassExercise, 
   type ClassPlan 
@@ -24,7 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ChevronLeft, Plus, X, Search, GripVertical } from "lucide-react"
+import { ChevronLeft, Plus, X, Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ClassPlanEditorProps {
@@ -34,8 +33,8 @@ interface ClassPlanEditorProps {
 const springColorMap: Record<string, string> = {
   Red: "bg-red-500",
   Blue: "bg-blue-500",
-  Green: "bg-green-500",
-  Yellow: "bg-yellow-500",
+  Green: "bg-green-600",
+  Yellow: "bg-yellow-400",
   Black: "bg-gray-900",
   White: "bg-white border border-gray-300",
   Orange: "bg-orange-500",
@@ -192,6 +191,23 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
     return exercise?.apparatus === "Reformer"
   }
 
+  const getApparatusBadgeColor = (apparatus: string) => {
+    switch (apparatus) {
+      case "Reformer":
+        return "bg-blue-50 text-blue-700 border-blue-200"
+      case "Mat":
+        return "bg-green-50 text-green-700 border-green-200"
+      case "Wunda Chair":
+      case "Chair":
+        return "bg-amber-50 text-amber-700 border-amber-200"
+      case "Cadillac/Tower":
+      case "Cadillac":
+        return "bg-slate-100 text-slate-700 border-slate-200"
+      default:
+        return "bg-muted text-muted-foreground border-border"
+    }
+  }
+
   return (
     <div className="flex h-full">
       {/* Main Editor */}
@@ -299,17 +315,19 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                 </p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {classExercises.map((classEx, index) => {
                   const exercise = getExerciseById(classEx.exerciseId)
                   if (!exercise) return null
 
                   const isCurrentlyEditing = editingExerciseIndex === index
                   const isReformer = isReformerExercise(classEx.exerciseId)
+                  const isMat = exercise.apparatus === "Mat"
                   const settingsLabel = getSettingsLabelForExercise(classEx.exerciseId)
                   const settingsOptions = getApparatusSettingsForExercise(classEx.exerciseId)
                   const isDragging = draggedIndex === index
                   const isDragOver = dragOverIndex === index
+                  const hasSprings = classEx.springs && classEx.springs.length > 0
 
                   return (
                     <div
@@ -321,134 +339,62 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                       onDrop={(e) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
                       className={cn(
-                        "flex items-center bg-card border border-border rounded-lg transition-all",
+                        "flex items-center bg-card border border-border rounded-lg transition-all cursor-grab active:cursor-grabbing",
                         isDragging && "opacity-50",
                         isDragOver && "border-primary border-2"
                       )}
                     >
-                      {/* Drag Handle */}
-                      <div className="px-3 py-4 cursor-grab active:cursor-grabbing border-r border-border">
-                        <GripVertical className="h-4 w-4 text-muted-foreground" />
-                      </div>
-
-                      {/* Exercise Name & Apparatus - takes remaining space */}
-                      <div className="flex-1 min-w-0 px-4 py-4 border-r border-border">
+                      {/* Exercise Name & Apparatus */}
+                      <div className="flex-1 min-w-0 px-5 py-4 border-r border-border">
                         <p className="font-medium text-foreground truncate">
                           {exercise.name}
                         </p>
                         <Badge
                           variant="outline"
-                          className="mt-1 text-xs bg-primary/10 text-primary border-primary/20"
+                          className={cn("mt-1.5 text-xs", getApparatusBadgeColor(exercise.apparatus))}
                         >
                           {exercise.apparatus}
                         </Badge>
                       </div>
 
                       {/* Reps Column */}
-                      <div className="w-24 px-4 py-4 border-r border-border text-center">
+                      <div className="w-24 px-4 py-4 border-r border-border">
                         <p className="text-xs text-muted-foreground uppercase mb-1">
                           Reps
                         </p>
-                        <p className="font-medium text-foreground">{classEx.reps}</p>
-                      </div>
-
-                      {/* Springs/Settings Column */}
-                      <div className="w-32 px-4 py-4 border-r border-border text-center">
-                        <p className="text-xs text-muted-foreground uppercase mb-1">
-                          {settingsLabel}
-                        </p>
-                        {classEx.springs && classEx.springs.length > 0 ? (
-                          <div className="flex items-center justify-center gap-1 flex-wrap">
-                            {classEx.springs.map((spring, i) => (
-                              <span key={i} className="flex items-center gap-1 text-sm">
-                                {isReformer && springColorMap[spring.color] && (
-                                  <span
-                                    className={cn(
-                                      "w-2.5 h-2.5 rounded-full",
-                                      springColorMap[spring.color]
-                                    )}
-                                  />
-                                )}
-                                <span>{spring.count}</span>
-                                <span>{spring.color}</span>
-                              </span>
-                            ))}
-                          </div>
+                        {isCurrentlyEditing ? (
+                          <Input
+                            type="number"
+                            value={classEx.reps}
+                            onChange={(e) => updateExerciseReps(index, parseInt(e.target.value) || 0)}
+                            className="w-16 h-8 text-center"
+                            min={1}
+                          />
                         ) : (
-                          <span className="text-sm text-muted-foreground">—</span>
+                          <p className="font-semibold text-foreground text-lg">{classEx.reps}</p>
                         )}
                       </div>
 
-                      {/* Actions Column */}
-                      <div className="flex items-center gap-2 px-4 py-4">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEditingExerciseIndex(isCurrentlyEditing ? null : index)}
-                          className="bg-muted/50"
-                        >
-                          {isCurrentlyEditing ? "Done" : "Edit"}
-                        </Button>
-                        <button
-                          onClick={() => removeExercise(index)}
-                          className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
-
-                {/* Editing Panel - shown below the edited exercise */}
-                {editingExerciseIndex !== null && (
-                  <div className="bg-card border border-primary/30 rounded-lg p-4 mt-2">
-                    {(() => {
-                      const classEx = classExercises[editingExerciseIndex]
-                      const exercise = getExerciseById(classEx.exerciseId)
-                      if (!exercise) return null
-                      
-                      const isReformer = exercise.apparatus === "Reformer"
-                      const settingsLabel = getApparatusSettingsLabel(exercise.apparatus)
-                      const settingsOptions = getApparatusSettings(exercise.apparatus)
-
-                      return (
-                        <div className="flex items-start gap-6">
+                      {/* Springs/Props Column */}
+                      <div className="w-44 px-4 py-4 border-r border-border min-h-[76px]">
+                        {isCurrentlyEditing ? (
                           <div className="space-y-2">
-                            <label className="text-xs font-medium text-muted-foreground uppercase">
-                              Reps
-                            </label>
-                            <Input
-                              type="number"
-                              value={classEx.reps}
-                              onChange={(e) =>
-                                updateExerciseReps(editingExerciseIndex, parseInt(e.target.value) || 0)
-                              }
-                              className="w-20"
-                              min={1}
-                            />
-                          </div>
-
-                          {settingsOptions.length > 0 && (
-                            <div className="space-y-2 flex-1">
-                              <label className="text-xs font-medium text-muted-foreground uppercase">
-                                {settingsLabel}
-                              </label>
-                              <div className="space-y-2">
+                            {settingsOptions.length > 0 && (
+                              <>
                                 {(classEx.springs || []).map((spring, springIndex) => (
-                                  <div key={springIndex} className="flex items-center gap-2">
+                                  <div key={springIndex} className="flex items-center gap-1">
+                                    {isReformer && springColorMap[spring.color] && (
+                                      <span className={cn("w-3 h-3 rounded-full shrink-0", springColorMap[spring.color])} />
+                                    )}
                                     <Select
                                       value={spring.color}
                                       onValueChange={(v) => {
                                         const newSprings = [...(classEx.springs || [])]
-                                        newSprings[springIndex] = {
-                                          ...spring,
-                                          color: v,
-                                        }
-                                        updateExerciseSprings(editingExerciseIndex, newSprings)
+                                        newSprings[springIndex] = { ...spring, color: v }
+                                        updateExerciseSprings(index, newSprings)
                                       }}
                                     >
-                                      <SelectTrigger className="w-36 h-8">
+                                      <SelectTrigger className="h-7 text-xs flex-1">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -469,52 +415,86 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                                       value={spring.count}
                                       onChange={(e) => {
                                         const newSprings = [...(classEx.springs || [])]
-                                        newSprings[springIndex] = {
-                                          ...spring,
-                                          count: parseInt(e.target.value) || 1,
-                                        }
-                                        updateExerciseSprings(editingExerciseIndex, newSprings)
+                                        newSprings[springIndex] = { ...spring, count: parseInt(e.target.value) || 1 }
+                                        updateExerciseSprings(index, newSprings)
                                       }}
-                                      className="w-16 h-8"
+                                      className="w-10 h-7 text-xs text-center"
                                       min={1}
                                     />
                                     <button
                                       onClick={() => {
-                                        const newSprings = (classEx.springs || []).filter(
-                                          (_, i) => i !== springIndex
-                                        )
-                                        updateExerciseSprings(editingExerciseIndex, newSprings)
+                                        const newSprings = (classEx.springs || []).filter((_, i) => i !== springIndex)
+                                        updateExerciseSprings(index, newSprings)
                                       }}
-                                      className="p-1 rounded hover:bg-muted text-muted-foreground"
+                                      className="p-0.5 rounded hover:bg-muted text-muted-foreground"
                                     >
                                       <X className="h-3 w-3" />
                                     </button>
                                   </div>
                                 ))}
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
+                                <button
                                   onClick={() => {
                                     const defaultSetting = settingsOptions[0] || "Red"
-                                    const newSprings = [
-                                      ...(classEx.springs || []),
-                                      { color: defaultSetting, count: 1 },
-                                    ]
-                                    updateExerciseSprings(editingExerciseIndex, newSprings)
+                                    const newSprings = [...(classEx.springs || []), { color: defaultSetting, count: 1 }]
+                                    updateExerciseSprings(index, newSprings)
                                   }}
-                                  className="text-xs"
+                                  className="w-full py-1.5 border border-dashed border-border rounded text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
                                 >
-                                  + Add {settingsLabel.toLowerCase().replace(/s$/, '')}
-                                </Button>
-                              </div>
-                            </div>
+                                  + Add {isMat ? "prop" : "spring"}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <>
+                            {hasSprings ? (
+                              <>
+                                <p className="text-xs text-muted-foreground uppercase mb-1">
+                                  {settingsLabel}
+                                </p>
+                                <div className="space-y-0.5">
+                                  {classEx.springs!.map((spring, i) => (
+                                    <span key={i} className="flex items-center gap-1.5 text-sm font-medium">
+                                      {isReformer && springColorMap[spring.color] && (
+                                        <span className={cn("w-2.5 h-2.5 rounded-full", springColorMap[spring.color])} />
+                                      )}
+                                      <span>{spring.count}</span>
+                                      <span className="text-foreground">{spring.color}</span>
+                                    </span>
+                                  ))}
+                                </div>
+                              </>
+                            ) : (
+                              // Empty state - no label shown for Mat when no props
+                              <div />
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* Actions Column */}
+                      <div className="flex items-center gap-2 px-4 py-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingExerciseIndex(isCurrentlyEditing ? null : index)}
+                          className={cn(
+                            "text-xs",
+                            isCurrentlyEditing ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-muted/50"
                           )}
-                        </div>
-                      )
-                    })()}
-                  </div>
-                )}
+                        >
+                          {isCurrentlyEditing ? "Done" : "Edit"}
+                        </Button>
+                        <button
+                          onClick={() => removeExercise(index)}
+                          className="p-2 rounded-md text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -523,8 +503,8 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
 
       {/* Exercise Library Sidebar */}
       <div className="w-96 border-l border-border bg-card flex flex-col">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground mb-4">
+        <div className="p-5">
+          <h2 className="text-xl font-serif text-foreground mb-5">
             Exercise Library
           </h2>
 
@@ -535,12 +515,12 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
               placeholder="Search exercises..."
               value={exerciseSearch}
               onChange={(e) => setExerciseSearch(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-muted/50 border-transparent"
             />
           </div>
 
           {/* Filters */}
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <div className="flex flex-wrap gap-1.5">
               {["All", "Reformer", "Mat", "Wunda Chair", "Cadillac/Tower"].map(
                 (a) => (
@@ -548,13 +528,13 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                     key={a}
                     onClick={() => setExerciseApparatusFilter(a)}
                     className={cn(
-                      "px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+                      "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
                       exerciseApparatusFilter === a
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
                     )}
                   >
-                    {a}
+                    {a === "Cadillac/Tower" ? "Cadillac Tower" : a}
                   </button>
                 )
               )}
@@ -565,7 +545,7 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                   key={l}
                   onClick={() => setExerciseLevelFilter(l)}
                   className={cn(
-                    "px-2.5 py-1 rounded-full text-xs font-medium transition-colors",
+                    "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
                     exerciseLevelFilter === l
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -578,8 +558,8 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
           </div>
         </div>
 
-        {/* Exercise List */}
-        <div className="flex-1 overflow-auto">
+        {/* Exercise List - no separators, circular + button */}
+        <div className="flex-1 overflow-auto px-2">
           {filteredExercises.map((exercise) => {
             const isAdded = classExercises.some(
               (ce) => ce.exerciseId === exercise.id
@@ -587,24 +567,24 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
             return (
               <div
                 key={exercise.id}
-                className="flex items-center justify-between p-3 border-b border-border hover:bg-muted/30 transition-colors"
+                className="group flex items-center justify-between px-3 py-3 rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div className="min-w-0">
                   <p className="font-medium text-foreground text-sm truncate">
                     {exercise.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {exercise.apparatus} · {exercise.level}
+                    {exercise.apparatus === "Cadillac/Tower" ? "Cadillac Tower" : exercise.apparatus} · {exercise.level}
                   </p>
                 </div>
                 <button
                   onClick={() => addExerciseToClass(exercise.id)}
                   disabled={isAdded}
                   className={cn(
-                    "p-1.5 rounded-full transition-colors",
+                    "w-8 h-8 rounded-full flex items-center justify-center transition-all",
                     isAdded
-                      ? "bg-muted text-muted-foreground cursor-not-allowed"
-                      : "hover:bg-muted text-muted-foreground hover:text-foreground"
+                      ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
+                      : "bg-transparent text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground"
                   )}
                 >
                   <Plus className="h-4 w-4" />

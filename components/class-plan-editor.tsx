@@ -4,7 +4,16 @@ import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useAppStore } from "@/lib/store"
-import { apparatusOptions, levelOptions, springColors, type Spring, type ClassExercise, type ClassPlan } from "@/lib/data"
+import { 
+  apparatusOptions, 
+  levelOptions, 
+  getApparatusSettings, 
+  getApparatusSettingsLabel,
+  reformerSprings,
+  type Spring, 
+  type ClassExercise, 
+  type ClassPlan 
+} from "@/lib/data"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ChevronLeft, Plus, X, Search } from "lucide-react"
+import { ChevronLeft, Plus, X, Search, GripVertical } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ClassPlanEditorProps {
@@ -27,7 +36,10 @@ const springColorMap: Record<string, string> = {
   Blue: "bg-blue-500",
   Green: "bg-green-500",
   Yellow: "bg-yellow-500",
-  L: "bg-gray-400",
+  Black: "bg-gray-900",
+  White: "bg-white border border-gray-300",
+  Orange: "bg-orange-500",
+  Classical: "bg-amber-700",
 }
 
 export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
@@ -51,6 +63,10 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
 
   // Editing state for individual exercises
   const [editingExerciseIndex, setEditingExerciseIndex] = useState<number | null>(null)
+
+  // Drag state
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   const filteredExercises = useMemo(() => {
     return exercises.filter((ex) => {
@@ -96,6 +112,43 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
     )
   }
 
+  // Drag and drop handlers
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index)
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index)
+    }
+  }
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null)
+      setDragOverIndex(null)
+      return
+    }
+
+    const newExercises = [...classExercises]
+    const [draggedItem] = newExercises.splice(draggedIndex, 1)
+    newExercises.splice(dropIndex, 0, draggedItem)
+    setClassExercises(newExercises)
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
   const handleSave = () => {
     if (!name.trim()) {
       alert("Please enter a class name")
@@ -122,6 +175,23 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
 
   const getExerciseById = (id: string) => exercises.find((ex) => ex.id === id)
 
+  const getApparatusSettingsForExercise = (exerciseId: string) => {
+    const exercise = getExerciseById(exerciseId)
+    if (!exercise) return []
+    return getApparatusSettings(exercise.apparatus)
+  }
+
+  const getSettingsLabelForExercise = (exerciseId: string) => {
+    const exercise = getExerciseById(exerciseId)
+    if (!exercise) return "Settings"
+    return getApparatusSettingsLabel(exercise.apparatus)
+  }
+
+  const isReformerExercise = (exerciseId: string) => {
+    const exercise = getExerciseById(exerciseId)
+    return exercise?.apparatus === "Reformer"
+  }
+
   return (
     <div className="flex h-full">
       {/* Main Editor */}
@@ -140,7 +210,7 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
         </div>
 
         {/* Form */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-6 bg-muted/30">
           <Link
             href="/class-plans"
             className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6"
@@ -149,9 +219,9 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
             Class Plans
           </Link>
 
-          {/* Class Details */}
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="space-y-2">
+          {/* Class Details - evenly spaced with more room for class name */}
+          <div className="flex gap-4 mb-8">
+            <div className="flex-[2] space-y-2">
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Class Name
               </label>
@@ -159,14 +229,15 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Full Body Flow"
+                className="bg-card"
               />
             </div>
-            <div className="space-y-2">
+            <div className="flex-1 space-y-2">
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Apparatus
               </label>
               <Select value={apparatus} onValueChange={setApparatus}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-card">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -178,12 +249,12 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="flex-1 space-y-2">
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Duration
               </label>
               <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-card">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -195,12 +266,12 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="flex-1 space-y-2">
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Level
               </label>
               <Select value={level} onValueChange={setLevel}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-card">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -221,27 +292,48 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
             </h2>
 
             {classExercises.length === 0 ? (
-              <div className="border-2 border-dashed border-border rounded-xl p-12 text-center">
+              <div className="border-2 border-dashed border-border rounded-xl p-12 text-center bg-card">
                 <Plus className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground">
                   Search and add exercises from the library
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {classExercises.map((classEx, index) => {
                   const exercise = getExerciseById(classEx.exerciseId)
                   if (!exercise) return null
 
-                  const isEditing = editingExerciseIndex === index
+                  const isCurrentlyEditing = editingExerciseIndex === index
+                  const isReformer = isReformerExercise(classEx.exerciseId)
+                  const settingsLabel = getSettingsLabelForExercise(classEx.exerciseId)
+                  const settingsOptions = getApparatusSettingsForExercise(classEx.exerciseId)
+                  const isDragging = draggedIndex === index
+                  const isDragOver = dragOverIndex === index
 
                   return (
                     <div
                       key={index}
-                      className="flex items-center gap-4 p-4 bg-card border border-border rounded-lg"
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={cn(
+                        "flex items-center bg-card border border-border rounded-lg transition-all",
+                        isDragging && "opacity-50",
+                        isDragOver && "border-primary border-2"
+                      )}
                     >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground">
+                      {/* Drag Handle */}
+                      <div className="px-3 py-4 cursor-grab active:cursor-grabbing border-r border-border">
+                        <GripVertical className="h-4 w-4 text-muted-foreground" />
+                      </div>
+
+                      {/* Exercise Name & Apparatus - takes remaining space */}
+                      <div className="flex-1 min-w-0 px-4 py-4 border-r border-border">
+                        <p className="font-medium text-foreground truncate">
                           {exercise.name}
                         </p>
                         <Badge
@@ -252,138 +344,51 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                         </Badge>
                       </div>
 
-                      {/* Reps */}
-                      <div className="text-center">
+                      {/* Reps Column */}
+                      <div className="w-24 px-4 py-4 border-r border-border text-center">
                         <p className="text-xs text-muted-foreground uppercase mb-1">
                           Reps
                         </p>
-                        <Input
-                          type="number"
-                          value={classEx.reps}
-                          onChange={(e) =>
-                            updateExerciseReps(index, parseInt(e.target.value) || 0)
-                          }
-                          className="w-16 text-center"
-                          min={1}
-                        />
+                        <p className="font-medium text-foreground">{classEx.reps}</p>
                       </div>
 
-                      {/* Springs */}
-                      {isEditing ? (
-                        <div className="flex items-center gap-2">
-                          <div className="space-y-2">
-                            {(classEx.springs || []).map((spring, springIndex) => (
-                              <div key={springIndex} className="flex items-center gap-1">
-                                <Select
-                                  value={spring.color}
-                                  onValueChange={(v) => {
-                                    const newSprings = [...(classEx.springs || [])]
-                                    newSprings[springIndex] = {
-                                      ...spring,
-                                      color: v as Spring["color"],
-                                    }
-                                    updateExerciseSprings(index, newSprings)
-                                  }}
-                                >
-                                  <SelectTrigger className="w-20 h-8">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {springColors.map((c) => (
-                                      <SelectItem key={c} value={c}>
-                                        {c}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <Input
-                                  type="number"
-                                  value={spring.count}
-                                  onChange={(e) => {
-                                    const newSprings = [...(classEx.springs || [])]
-                                    newSprings[springIndex] = {
-                                      ...spring,
-                                      count: parseInt(e.target.value) || 1,
-                                    }
-                                    updateExerciseSprings(index, newSprings)
-                                  }}
-                                  className="w-12 h-8"
-                                  min={1}
-                                />
-                                <button
-                                  onClick={() => {
-                                    const newSprings = (classEx.springs || []).filter(
-                                      (_, i) => i !== springIndex
-                                    )
-                                    updateExerciseSprings(index, newSprings)
-                                  }}
-                                  className="p-1 rounded hover:bg-muted text-muted-foreground"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ))}
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const newSprings = [
-                                  ...(classEx.springs || []),
-                                  { color: "Red" as const, count: 1 },
-                                ]
-                                updateExerciseSprings(index, newSprings)
-                              }}
-                              className="w-full text-xs"
-                            >
-                              + Add spring
-                            </Button>
-                          </div>
-                          <Button
-                            size="sm"
-                            onClick={() => setEditingExerciseIndex(null)}
-                          >
-                            Done
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="text-center min-w-24">
-                          <p className="text-xs text-muted-foreground uppercase mb-1">
-                            Springs
-                          </p>
-                          {classEx.springs && classEx.springs.length > 0 ? (
-                            <div className="flex items-center justify-center gap-1">
-                              {classEx.springs.map((spring, i) => (
-                                <span key={i} className="flex items-center gap-1">
+                      {/* Springs/Settings Column */}
+                      <div className="w-32 px-4 py-4 border-r border-border text-center">
+                        <p className="text-xs text-muted-foreground uppercase mb-1">
+                          {settingsLabel}
+                        </p>
+                        {classEx.springs && classEx.springs.length > 0 ? (
+                          <div className="flex items-center justify-center gap-1 flex-wrap">
+                            {classEx.springs.map((spring, i) => (
+                              <span key={i} className="flex items-center gap-1 text-sm">
+                                {isReformer && springColorMap[spring.color] && (
                                   <span
                                     className={cn(
                                       "w-2.5 h-2.5 rounded-full",
-                                      springColorMap[spring.color] || "bg-gray-400"
+                                      springColorMap[spring.color]
                                     )}
                                   />
-                                  <span className="text-sm">
-                                    {spring.count} {spring.color}
-                                  </span>
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-sm text-muted-foreground">—</span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-1">
-                        {!isEditing && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingExerciseIndex(index)}
-                          >
-                            Edit
-                          </Button>
+                                )}
+                                <span>{spring.count}</span>
+                                <span>{spring.color}</span>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">—</span>
                         )}
+                      </div>
+
+                      {/* Actions Column */}
+                      <div className="flex items-center gap-2 px-4 py-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingExerciseIndex(isCurrentlyEditing ? null : index)}
+                          className="bg-muted/50"
+                        >
+                          {isCurrentlyEditing ? "Done" : "Edit"}
+                        </Button>
                         <button
                           onClick={() => removeExercise(index)}
                           className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-destructive transition-colors"
@@ -394,6 +399,122 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                     </div>
                   )
                 })}
+
+                {/* Editing Panel - shown below the edited exercise */}
+                {editingExerciseIndex !== null && (
+                  <div className="bg-card border border-primary/30 rounded-lg p-4 mt-2">
+                    {(() => {
+                      const classEx = classExercises[editingExerciseIndex]
+                      const exercise = getExerciseById(classEx.exerciseId)
+                      if (!exercise) return null
+                      
+                      const isReformer = exercise.apparatus === "Reformer"
+                      const settingsLabel = getApparatusSettingsLabel(exercise.apparatus)
+                      const settingsOptions = getApparatusSettings(exercise.apparatus)
+
+                      return (
+                        <div className="flex items-start gap-6">
+                          <div className="space-y-2">
+                            <label className="text-xs font-medium text-muted-foreground uppercase">
+                              Reps
+                            </label>
+                            <Input
+                              type="number"
+                              value={classEx.reps}
+                              onChange={(e) =>
+                                updateExerciseReps(editingExerciseIndex, parseInt(e.target.value) || 0)
+                              }
+                              className="w-20"
+                              min={1}
+                            />
+                          </div>
+
+                          {settingsOptions.length > 0 && (
+                            <div className="space-y-2 flex-1">
+                              <label className="text-xs font-medium text-muted-foreground uppercase">
+                                {settingsLabel}
+                              </label>
+                              <div className="space-y-2">
+                                {(classEx.springs || []).map((spring, springIndex) => (
+                                  <div key={springIndex} className="flex items-center gap-2">
+                                    <Select
+                                      value={spring.color}
+                                      onValueChange={(v) => {
+                                        const newSprings = [...(classEx.springs || [])]
+                                        newSprings[springIndex] = {
+                                          ...spring,
+                                          color: v,
+                                        }
+                                        updateExerciseSprings(editingExerciseIndex, newSprings)
+                                      }}
+                                    >
+                                      <SelectTrigger className="w-36 h-8">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {settingsOptions.map((c) => (
+                                          <SelectItem key={c} value={c}>
+                                            <span className="flex items-center gap-2">
+                                              {isReformer && springColorMap[c] && (
+                                                <span className={cn("w-2.5 h-2.5 rounded-full", springColorMap[c])} />
+                                              )}
+                                              {c}
+                                            </span>
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <Input
+                                      type="number"
+                                      value={spring.count}
+                                      onChange={(e) => {
+                                        const newSprings = [...(classEx.springs || [])]
+                                        newSprings[springIndex] = {
+                                          ...spring,
+                                          count: parseInt(e.target.value) || 1,
+                                        }
+                                        updateExerciseSprings(editingExerciseIndex, newSprings)
+                                      }}
+                                      className="w-16 h-8"
+                                      min={1}
+                                    />
+                                    <button
+                                      onClick={() => {
+                                        const newSprings = (classEx.springs || []).filter(
+                                          (_, i) => i !== springIndex
+                                        )
+                                        updateExerciseSprings(editingExerciseIndex, newSprings)
+                                      }}
+                                      className="p-1 rounded hover:bg-muted text-muted-foreground"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const defaultSetting = settingsOptions[0] || "Red"
+                                    const newSprings = [
+                                      ...(classEx.springs || []),
+                                      { color: defaultSetting, count: 1 },
+                                    ]
+                                    updateExerciseSprings(editingExerciseIndex, newSprings)
+                                  }}
+                                  className="text-xs"
+                                >
+                                  + Add {settingsLabel.toLowerCase().replace(/s$/, '')}
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
+                  </div>
+                )}
               </div>
             )}
           </div>

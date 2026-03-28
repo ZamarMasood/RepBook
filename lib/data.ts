@@ -10,8 +10,44 @@ export interface User {
 }
 
 export interface Spring {
-  color: "Red" | "Blue" | "Green" | "Yellow" | "L"
+  color: string
   count: number
+}
+
+// Apparatus-specific settings
+export const reformerSprings = ["Green", "Red", "Blue", "Yellow", "Black", "White", "Orange", "Classical"] as const
+export const chairSprings = ["High", "Middle", "Low"] as const
+export const matProps = ["Magic Circle", "Spine Corrector", "Small Barrel", "Small Ball", "Weights", "Theraband", "Foam Roller", "Jump Board"] as const
+export const cadillacSprings = ["Arm Springs", "Leg Springs", "Rollback Bar", "Push Through Bar", "Trapeze"] as const
+
+export function getApparatusSettings(apparatus: string): readonly string[] {
+  switch (apparatus) {
+    case "Reformer":
+      return reformerSprings
+    case "Wunda Chair":
+      return chairSprings
+    case "Mat":
+      return matProps
+    case "Cadillac/Tower":
+      return cadillacSprings
+    default:
+      return []
+  }
+}
+
+export function getApparatusSettingsLabel(apparatus: string): string {
+  switch (apparatus) {
+    case "Reformer":
+      return "Springs"
+    case "Wunda Chair":
+      return "Springs"
+    case "Mat":
+      return "Props"
+    case "Cadillac/Tower":
+      return "Equipment"
+    default:
+      return "Settings"
+  }
 }
 
 export interface Exercise {
@@ -554,5 +590,5 @@ export const apparatusOptions = [
 // Level options
 export const levelOptions = ["All Levels", "Beginner", "Intermediate", "Advanced"]
 
-// Spring colors
-export const springColors = ["Red", "Blue", "Green", "Yellow", "L"] as const
+// Legacy spring colors (for backwards compatibility)
+export const springColors = ["Green", "Red", "Blue", "Yellow", "Black", "White", "Orange", "Classical"] as const

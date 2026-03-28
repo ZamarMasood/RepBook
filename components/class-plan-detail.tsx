@@ -177,38 +177,38 @@ export function ClassPlanDetail({ planId }: ClassPlanDetailProps) {
                 className="bg-card border border-border rounded-lg overflow-hidden"
               >
                 {/* Main Row */}
-                <div
+                <button
                   onClick={() => hasNotes && setExpandedExercise(isExpanded ? null : index)}
                   className={cn(
-                    "flex items-center",
+                    "flex items-stretch w-full text-left",
                     hasNotes && "cursor-pointer hover:bg-muted/30 transition-colors"
                   )}
                 >
                   {/* Exercise Name & Badge */}
-                  <div className="flex-1 min-w-0 p-4">
+                  <div className="flex-1 min-w-0 p-4 flex flex-col justify-center">
                     <p className="font-medium text-foreground text-lg">{exercise.name}</p>
                     <Badge
                       variant="outline"
-                      className={cn("mt-1 text-xs", getExerciseBadgeClass(exercise.apparatus))}
+                      className={cn("mt-1 text-xs w-fit", getExerciseBadgeClass(exercise.apparatus))}
                     >
                       {exercise.apparatus === "Wunda Chair" ? "Chair" : exercise.apparatus === "Cadillac/Tower" ? "Cadillac" : exercise.apparatus}
                     </Badge>
                   </div>
 
                   {/* Reps Column */}
-                  <div className="w-20 p-4 border-l border-border">
+                  <div className="w-24 p-4 border-l border-border/50 flex flex-col justify-center">
                     <p className="text-xs text-muted-foreground uppercase mb-1">Reps</p>
                     <p className="font-semibold text-foreground text-lg">{classEx.reps}</p>
                   </div>
 
                   {/* Springs Column */}
-                  <div className="w-32 p-4 border-l border-border">
+                  <div className="w-36 p-4 border-l border-border/50 flex flex-col justify-center">
                     {classEx.springs && classEx.springs.length > 0 ? (
                       <>
                         <p className="text-xs text-muted-foreground uppercase mb-1">
                           {exercise.apparatus === "Mat" ? "Props" : "Springs"}
                         </p>
-                        <div className="space-y-1">
+                        <div className="space-y-0.5">
                           {classEx.springs.map((spring, i) => (
                             <div key={i} className="flex items-center gap-1.5">
                               {isReformer(exercise.apparatus) && spring.color !== "Classical" && springColorMap[spring.color] && (
@@ -229,18 +229,20 @@ export function ClassPlanDetail({ planId }: ClassPlanDetailProps) {
                     )}
                   </div>
 
-                  {/* Expand Arrow */}
-                  {hasNotes && (
-                    <div className="px-3">
+                  {/* Expand Indicator */}
+                  <div className="w-10 flex items-center justify-center border-l border-border/50">
+                    {hasNotes ? (
                       <ChevronDown 
                         className={cn(
                           "h-4 w-4 text-muted-foreground transition-transform",
                           isExpanded && "rotate-180"
                         )} 
                       />
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      <div className="w-4" />
+                    )}
+                  </div>
+                </button>
 
                 {/* Expanded Notes */}
                 {isExpanded && hasNotes && (

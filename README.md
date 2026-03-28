@@ -6,7 +6,8 @@ A Pilates studio management application for instructors to organize exercises an
 
 - **Home Dashboard** - Overview with stats, recent plans, and quick actions
 - **Exercise Library** - Browse, search, and manage Pilates exercises with filtering by apparatus and level
-- **Class Plans** - Create and edit class plans by combining exercises with custom reps and spring settings
+- **Class Plans** - Create and edit class plans with drag-and-drop exercise ordering
+- **Class Plan Builder** - Side-by-side editor with exercise library picker
 - **Profile & Settings** - Manage account details and preferences
 
 ## Tech Stack
@@ -34,6 +35,8 @@ Two demo accounts are available for testing:
 | Sarah Anderson | Body Balance Studio | San Francisco, CA |
 | Michael Chen | Pilates Flow | Los Angeles, CA |
 
+Click on either account card on the login screen to enter the app.
+
 ## Project Structure
 
 ```
@@ -42,6 +45,7 @@ app/
 ├── exercises/                  # Exercise Library
 ├── class-plans/               # Class Plans list and editor
 │   ├── [id]/                  # View/edit specific plan
+│   │   └── edit/              # Edit existing plan
 │   └── new/                   # Create new plan
 └── profile/                   # Profile & Settings
 
@@ -50,8 +54,11 @@ components/
 ├── app-sidebar.tsx            # Navigation sidebar
 ├── home-page.tsx              # Dashboard component
 ├── exercise-library-page.tsx  # Exercise list with filters
+├── add-exercise-modal.tsx     # Create/edit exercise form
+├── exercise-detail-modal.tsx  # View exercise details
 ├── class-plans-page.tsx       # Plans grid view
-├── class-plan-editor.tsx      # Plan creation/editing
+├── class-plan-editor.tsx      # Plan builder with exercise picker
+├── class-plan-detail.tsx      # View plan with expandable notes
 └── profile-page.tsx           # Settings forms
 
 lib/
@@ -64,9 +71,21 @@ lib/
 - **User** - Instructor profile with studio info
 - **Exercise** - Pilates exercise with apparatus, level, position, springs, and cues
 - **ClassPlan** - Collection of exercises with customized reps and springs
+- **ClassExercise** - Exercise instance in a plan with custom settings
+
+## Apparatus-Specific Settings
+
+Each apparatus type has different spring/equipment options:
+
+| Apparatus | Settings |
+|-----------|----------|
+| Reformer | Color springs (Green, Red, Blue, Yellow, Black, White, Orange, Classical) with count |
+| Wunda Chair | Spring positions (High, Middle, Low) with count |
+| Mat | Props only (Magic Circle, Spine Corrector, Small Barrel, etc.) |
+| Cadillac/Tower | Equipment (Arm Springs, Leg Springs, Rollback Bar, Push Through Bar, Trapeze) |
 
 ## Notes
 
 - Data is stored in memory using Zustand (no backend persistence)
-- Spring colors: Red, Blue, Green, Yellow, White, Light (L)
-- Apparatus types: Reformer, Mat, Wunda Chair, Cadillac/Tower, Ladder Barrel
+- Exercises in the class builder support drag-and-drop reordering
+- Click on exercises in class plan view to expand and see notes (setup, cues, modifications)

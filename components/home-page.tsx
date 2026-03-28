@@ -78,7 +78,7 @@ export function HomePage() {
               <p className="text-3xl font-semibold text-foreground">
                 {totalExercises}
               </p>
-              <p className="text-sm text-muted-foreground">Exercises</p>
+              <p className="text-sm text-muted-foreground">New exercises</p>
             </div>
           </CardContent>
         </Card>
@@ -92,7 +92,7 @@ export function HomePage() {
               <p className="text-3xl font-semibold text-foreground">
                 {favorites}
               </p>
-              <p className="text-sm text-muted-foreground">Favourites</p>
+              <p className="text-sm text-muted-foreground">Favorites</p>
             </div>
           </CardContent>
         </Card>
@@ -134,12 +134,12 @@ export function HomePage() {
               </Link>
             </div>
 
-            <div className="space-y-1">
+            <div className="divide-y divide-border">
               {classPlans.slice(0, 4).map((plan) => (
                 <Link
                   key={plan.id}
                   href={`/class-plans/${plan.id}`}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
+                  className="flex items-center gap-4 py-3 hover:bg-muted/50 transition-colors group"
                 >
                   <div className="p-2 rounded-lg bg-muted">
                     <LayoutGrid className="h-4 w-4 text-muted-foreground" />
@@ -155,7 +155,7 @@ export function HomePage() {
                   {plan.isFavorite && (
                     <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
                   )}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
                 </Link>
               ))}
 
@@ -178,10 +178,10 @@ export function HomePage() {
               <p className="text-sm text-muted-foreground">Get started quickly</p>
             </div>
 
-            <div className="space-y-2">
+            <div className="divide-y divide-border">
               <Link
                 href="/class-plans/new"
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-4 py-3 hover:bg-muted/50 transition-colors"
               >
                 <div className="p-2 rounded-lg bg-primary text-primary-foreground">
                   <Plus className="h-4 w-4" />
@@ -194,7 +194,7 @@ export function HomePage() {
 
               <Link
                 href="/exercises"
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-4 py-3 hover:bg-muted/50 transition-colors"
               >
                 <div className="p-2 rounded-lg bg-muted">
                   <FileText className="h-4 w-4 text-muted-foreground" />
@@ -207,7 +207,7 @@ export function HomePage() {
 
               <Link
                 href="/exercises?add=true"
-                className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-4 py-3 hover:bg-muted/50 transition-colors"
               >
                 <div className="p-2 rounded-lg bg-muted">
                   <Plus className="h-4 w-4 text-muted-foreground" />

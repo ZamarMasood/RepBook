@@ -213,10 +213,7 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
       {/* Main Editor */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border bg-background">
-          <span className="text-sm text-muted-foreground">
-            {classExercises.length} exercises
-          </span>
+        <div className="flex items-center justify-end p-4 border-b border-border bg-background">
           <div className="flex items-center gap-3">
             <Link href="/class-plans">
               <Button variant="outline">Cancel</Button>
@@ -303,9 +300,14 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
 
           {/* Class Exercises */}
           <div>
-            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
-              Class Exercises
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Class Exercises
+              </h2>
+              <span className="text-sm text-muted-foreground">
+                {classExercises.length} {classExercises.length === 1 ? "exercise" : "exercises"}
+              </span>
+            </div>
 
             {classExercises.length === 0 ? (
               <div className="border-2 border-dashed border-border rounded-xl p-12 text-center bg-card">

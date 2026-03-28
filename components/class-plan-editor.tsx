@@ -213,7 +213,10 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
       {/* Main Editor */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-end p-4 border-b border-border bg-background">
+        <div className="flex items-center justify-between p-4 border-b border-border bg-background">
+          <span className="text-sm text-muted-foreground">
+            {classExercises.length} {classExercises.length === 1 ? "exercise" : "exercises"}
+          </span>
           <div className="flex items-center gap-3">
             <Link href="/class-plans">
               <Button variant="outline">Cancel</Button>
@@ -300,14 +303,9 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
 
           {/* Class Exercises */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Class Exercises
-              </h2>
-              <span className="text-sm text-muted-foreground">
-                {classExercises.length} {classExercises.length === 1 ? "exercise" : "exercises"}
-              </span>
-            </div>
+            <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              Class Exercises
+            </h2>
 
             {classExercises.length === 0 ? (
               <div className="border-2 border-dashed border-border rounded-xl p-12 text-center bg-card">
@@ -504,7 +502,7 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
       </div>
 
       {/* Exercise Library Sidebar */}
-      <div className="w-96 border-l border-border bg-card flex flex-col">
+      <div className="w-80 border-l border-border bg-card flex flex-col">
         <div className="p-5">
           <h2 className="text-xl font-serif text-foreground mb-5">
             Exercise Library
@@ -583,13 +581,13 @@ export function ClassPlanEditor({ existingPlan }: ClassPlanEditorProps) {
                   onClick={() => addExerciseToClass(exercise.id)}
                   disabled={isAdded}
                   className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                    "w-7 h-7 rounded-full flex items-center justify-center transition-all border",
                     isAdded
-                      ? "bg-muted text-muted-foreground cursor-not-allowed opacity-50"
-                      : "bg-transparent text-muted-foreground group-hover:bg-accent group-hover:text-accent-foreground"
+                      ? "bg-muted border-muted text-muted-foreground cursor-not-allowed opacity-50"
+                      : "border-muted-foreground/30 text-muted-foreground hover:bg-accent hover:border-accent hover:text-accent-foreground"
                   )}
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3.5 w-3.5" />
                 </button>
               </div>
             )

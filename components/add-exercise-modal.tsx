@@ -2,12 +2,22 @@
 
 import { useState, useEffect } from "react"
 import { useAppStore } from "@/lib/store"
-import { apparatusOptions, levelOptions, springColors, type Spring, type Exercise } from "@/lib/data"
+import { 
+  apparatusOptions, 
+  levelOptions, 
+  reformerSprings,
+  chairSprings,
+  cadillacSprings,
+  matProps,
+  type Spring, 
+  type Exercise 
+} from "@/lib/data"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,12 +30,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { X, Plus } from "lucide-react"
+import { X, Plus, Minus } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface AddExerciseModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   exercise?: Exercise | null
+}
+
+const springColorMap: Record<string, string> = {
+  Red: "bg-red-500",
+  Blue: "bg-blue-500",
+  Green: "bg-green-500",
+  Yellow: "bg-yellow-400",
+  Black: "bg-black",
+  White: "bg-white border border-gray-300",
+  Orange: "bg-orange-500",
 }
 
 export function AddExerciseModal({
@@ -77,13 +98,47 @@ export function AddExerciseModal({
     setModifications("")
   }
 
+  // Get spring options based on apparatus
+  const getSpringOptions = () => {
+    switch (apparatus) {
+      case "Reformer":
+        return reformerSprings
+      case "Wunda Chair":
+        return chairSprings
+      case "Cadillac/Tower":
+        return cadillacSprings
+      default:
+        return []
+    }
+  }
+
+  const springOptions = getSpringOptions()
+  const isReformer = apparatus === "Reformer"
+  const isChair = apparatus === "Wunda Chair"
+  const isCadillac = apparatus === "Cadillac/Tower"
+  const isMat = apparatus === "Mat"
+  const showSprings = isReformer || isChair || isCadillac
+
   const addSpring = () => {
-    setSprings([...springs, { color: "Red", count: 1 }])
+    const defaultColor = springOptions[0] || "Red"
+    setSprings([...springs, { color: defaultColor, count: 1 }])
   }
 
   const updateSpring = (index: number, updates: Partial<Spring>) => {
     setSprings(
       springs.map((s, i) => (i === index ? { ...s, ...updates } : s))
+    )
+  }
+
+  const incrementSpring = (index: number) => {
+    setSprings(
+      springs.map((s, i) => (i === index ? { ...s, count: s.count + 1 } : s))
+    )
+  }
+
+  const decrementSpring = (index: number) => {
+    setSprings(
+      springs.map((s, i) => (i === index ? { ...s, count: Math.max(1, s.count - 1) } : s))
     )
   }
 
@@ -120,6 +175,9 @@ export function AddExerciseModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogDescription className="sr-only">
+          {isEditing ? "Edit exercise details" : "Add a new exercise to your library"}
+        </DialogDescription>
         <DialogHeader>
           <DialogTitle className="text-xl">
             {isEditing ? "Edit Exercise" : "Add Exercise"}
@@ -146,7 +204,10 @@ export function AddExerciseModal({
               <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Apparatus
               </Label>
-              <Select value={apparatus} onValueChange={setApparatus}>
+              <Select value={apparatus} onValueChange={(v) => {
+                setApparatus(v)
+                setSprings([]) // Reset springs when apparatus changes
+              }}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -207,74 +268,105 @@ export function AddExerciseModal({
             </div>
           </div>
 
-          {/* Springs */}
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Springs
-            </Label>
+          {/* Springs - Only for Reformer, Chair, Cadillac */}
+          {showSprings && (
             <div className="space-y-2">
-              {springs.map((spring, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Select
-                    value={spring.color}
-                    onValueChange={(v) =>
-                      updateSpring(index, { color: v as Spring["color"] })
-                    }
-                  >
-                    <SelectTrigger className="w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {springColors.map((c) => (
-                        <SelectItem key={c} value={c}>
-                          {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    type="number"
-                    value={spring.count}
-                    onChange={(e) =>
-                      updateSpring(index, {
-                        count: parseInt(e.target.value) || 1,
-                      })
-                    }
-                    min={1}
-                    className="w-20"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeSpring(index)}
-                    className="p-2 rounded-md hover:bg-muted text-muted-foreground"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={addSpring}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Spring
-              </Button>
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Springs
+              </Label>
+              <div className="space-y-2">
+                {springs.map((spring, index) => (
+                  <div key={index} className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                    <Select
+                      value={spring.color}
+                      onValueChange={(v) => updateSpring(index, { color: v })}
+                    >
+                      <SelectTrigger className="w-36">
+                        <SelectValue>
+                          <span className="flex items-center gap-2">
+                            {isReformer && spring.color !== "Classical" && springColorMap[spring.color] && (
+                              <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", springColorMap[spring.color])} />
+                            )}
+                            {spring.color}
+                          </span>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {springOptions.map((c) => (
+                          <SelectItem key={c} value={c}>
+                            <span className="flex items-center gap-2">
+                              {isReformer && c !== "Classical" && springColorMap[c] && (
+                                <span className={cn("w-2.5 h-2.5 rounded-full", springColorMap[c])} />
+                              )}
+                              {c}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* +/- buttons for count - Reformer and Chair only */}
+                    {(isReformer || isChair) && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => decrementSpring(index)}
+                          className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-8 text-center font-medium">{spring.count}</span>
+                        <button
+                          type="button"
+                          onClick={() => incrementSpring(index)}
+                          className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    
+                    <button
+                      type="button"
+                      onClick={() => removeSpring(index)}
+                      className="p-2 rounded-md hover:bg-muted text-muted-foreground ml-auto"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addSpring}
+                  className="w-full border-primary text-primary hover:bg-primary/5"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Spring
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Props */}
+          {/* Props - dropdown for all apparatus */}
           <div className="space-y-2">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Props
             </Label>
-            <Input
-              value={props}
-              onChange={(e) => setProps(e.target.value)}
-              placeholder="None"
-            />
+            <Select value={props || "none"} onValueChange={(v) => setProps(v === "none" ? "" : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="None" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {matProps.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Setup */}

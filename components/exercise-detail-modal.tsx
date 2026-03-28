@@ -6,9 +6,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Edit2 } from "lucide-react"
+import { Edit2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ExerciseDetailModalProps {
@@ -21,8 +22,10 @@ const springColorMap: Record<string, string> = {
   Red: "bg-red-500",
   Blue: "bg-blue-500",
   Green: "bg-green-500",
-  Yellow: "bg-yellow-500",
-  L: "bg-gray-400",
+  Yellow: "bg-yellow-400",
+  Black: "bg-black",
+  White: "bg-white border border-gray-300",
+  Orange: "bg-orange-500",
 }
 
 export function ExerciseDetailModal({
@@ -32,11 +35,16 @@ export function ExerciseDetailModal({
 }: ExerciseDetailModalProps) {
   if (!exercise) return null
 
+  const isReformer = exercise.apparatus === "Reformer"
+
   return (
     <Dialog open={!!exercise} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader className="flex flex-row items-start justify-between gap-4">
-          <DialogTitle className="text-xl font-semibold">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogDescription className="sr-only">
+          Exercise details for {exercise.name}
+        </DialogDescription>
+        <DialogHeader className="flex flex-row items-start justify-between gap-4 pr-8">
+          <DialogTitle className="text-2xl font-serif font-normal text-foreground">
             {exercise.name}
           </DialogTitle>
           <Button
@@ -50,37 +58,35 @@ export function ExerciseDetailModal({
           </Button>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 pt-2">
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                 Apparatus
               </p>
-              <p className="text-foreground">{exercise.apparatus}</p>
+              <p className="text-foreground font-medium">{exercise.apparatus}</p>
             </div>
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                 Level
               </p>
-              <p className="text-foreground">{exercise.level}</p>
+              <p className="text-foreground font-medium">{exercise.level}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {exercise.position && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                  Position
-                </p>
-                <p className="text-foreground">{exercise.position}</p>
-              </div>
-            )}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                Position
+              </p>
+              <p className="text-foreground font-medium">{exercise.position || "—"}</p>
+            </div>
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                 Props
               </p>
-              <p className="text-foreground">{exercise.props || "None"}</p>
+              <p className="text-foreground font-medium">{exercise.props || "None"}</p>
             </div>
           </div>
 
@@ -101,17 +107,20 @@ export function ExerciseDetailModal({
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">
                   Springs
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {exercise.springs.map((spring, i) => (
                     <span key={i} className="flex items-center gap-1.5">
-                      <span
-                        className={cn(
-                          "w-3 h-3 rounded-full",
-                          springColorMap[spring.color] || "bg-gray-400"
-                        )}
-                      />
-                      <span className="text-foreground">
-                        {spring.count} {spring.color}
+                      {isReformer && spring.color !== "Classical" && springColorMap[spring.color] && (
+                        <span
+                          className={cn(
+                            "w-3 h-3 rounded-full",
+                            springColorMap[spring.color]
+                          )}
+                        />
+                      )}
+                      <span className="text-foreground font-medium">
+                        {(isReformer || exercise.apparatus === "Wunda Chair") && spring.count}{" "}
+                        {spring.color}
                       </span>
                     </span>
                   ))}

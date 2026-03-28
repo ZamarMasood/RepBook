@@ -1,6 +1,8 @@
 # repbook
 
-A Pilates studio management application for instructors to organize exercises and plan classes.
+RepBook is a digital workspace for Pilates instructors to organize their teaching knowledge, catalog exercises, and build class plans, all in one place. It replaces scattered planning across notebooks, spreadsheets, and notes apps with a purpose-built tool designed specifically for how Pilates instructors work.
+
+The platform includes a searchable exercise library, an intuitive class plan builder, and a clean teaching view optimized for in-studio use
 
 ## Features
 

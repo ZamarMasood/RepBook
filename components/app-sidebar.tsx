@@ -2,22 +2,20 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, LayoutGrid, FileText, ChevronLeft } from "lucide-react"
+import { Home, Library, BookOpen, LogOut } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAppStore } from "@/lib/store"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useState } from "react"
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/class-plans", label: "My Class Plans", icon: LayoutGrid },
-  { href: "/exercises", label: "Exercise Library", icon: FileText },
+  { href: "/exercises", label: "Exercise Library", icon: Library },
+  { href: "/class-plans", label: "Class Plans", icon: BookOpen },
 ]
 
 export function AppSidebar() {
   const pathname = usePathname()
-  const { currentUser } = useAppStore()
-  const [collapsed, setCollapsed] = useState(false)
+  const { currentUser, logout } = useAppStore()
 
   if (!currentUser) return null
 
@@ -25,32 +23,41 @@ export function AppSidebar() {
 
   return (
     <aside
-      className={cn(
-        "flex flex-col bg-sidebar border-r border-sidebar-border h-screen transition-all duration-300",
-        collapsed ? "w-16" : "w-60"
-      )}
+      className="flex flex-col bg-white h-screen shrink-0"
+      style={{ width: 224, borderRight: "0.8px solid #E0E0E0" }}
     >
       {/* Logo */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-        {!collapsed && (
-          <Link href="/" className="text-xl tracking-tight">
-            <span className="font-medium text-foreground">rep</span>
-            <span className="font-serif italic text-muted-foreground">book</span>
-          </Link>
-        )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-md hover:bg-sidebar-accent text-muted-foreground"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 14,
+            backgroundColor: "#4A6580",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#FFFFFF",
+            fontWeight: 700,
+            fontSize: 14,
+          }}
         >
-          <ChevronLeft
-            className={cn("h-4 w-4 transition-transform", collapsed && "rotate-180")}
-          />
-        </button>
+          R
+        </div>
+        <span
+          style={{
+            color: "#4A6580",
+            fontWeight: 700,
+            fontSize: 18,
+            lineHeight: "20px",
+          }}
+        >
+          Repbook
+        </span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1">
+      <nav className="flex-1 px-3 pt-2 space-y-1">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
@@ -61,43 +68,102 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground hover:bg-gray-100 hover:text-foreground"
               )}
+              style={isActive ? { backgroundColor: "#EDF1F5", color: "#4A6580" } : undefined}
             >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {!collapsed && <span>{item.label}</span>}
+              <div className="flex items-center gap-3">
+                <item.icon className="h-4 w-4 shrink-0" />
+                <span>{item.label}</span>
+              </div>
+              {isActive && (
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    backgroundColor: "#4A6580",
+                    flexShrink: 0,
+                  }}
+                />
+              )}
             </Link>
           )
         })}
       </nav>
 
-      {/* User Profile */}
-      <Link
-        href="/profile"
-        className={cn(
-          "flex items-center gap-3 p-4 border-t border-sidebar-border hover:bg-sidebar-accent transition-colors",
-          collapsed && "justify-center"
-        )}
+      {/* User Profile + Logout */}
+      <div
+        style={{
+          borderTop: "0.8px solid #E0E0E0",
+          paddingTop: 12.8,
+          paddingRight: 12,
+          paddingLeft: 12,
+          paddingBottom: 12,
+        }}
       >
-        <Avatar className="h-9 w-9 bg-accent text-accent-foreground shrink-0">
-          <AvatarFallback className="text-xs font-medium bg-accent text-foreground">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        {!collapsed && (
-          <div className="overflow-hidden">
-            <p className="text-sm font-medium text-foreground truncate">
-              {currentUser.firstName} {currentUser.lastName}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {currentUser.studioName}
-            </p>
-          </div>
-        )}
-      </Link>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            paddingRight: 8,
+            paddingLeft: 8,
+            borderRadius: 14,
+            height: 48,
+          }}
+        >
+          <Link
+            href="/profile"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              flex: 1,
+              minWidth: 0,
+              textDecoration: "none",
+            }}
+          >
+            <Avatar className="shrink-0" style={{ width: 36, height: 36, backgroundColor: "#4A6580" }}>
+              <AvatarFallback
+                style={{ backgroundColor: "#4A6580", color: "#FFFFFF", fontSize: 12, fontWeight: 500 }}
+              >
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div style={{ width: 105.2, flexShrink: 0 }}>
+              <p style={{ fontSize: 13, fontWeight: 500, color: "#2B2B2B", margin: 0, whiteSpace: "nowrap" }}>
+                {currentUser.firstName} {currentUser.lastName}
+              </p>
+              <p style={{ fontSize: 11, color: "#828282", margin: 0, marginTop: 1, whiteSpace: "nowrap", height: 15, lineHeight: "15px" }}>
+                {currentUser.studioName}
+              </p>
+            </div>
+          </Link>
+          <button
+            onClick={logout}
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 10,
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 4,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+            title="Logout"
+          >
+            <LogOut size={14} color="#828282" />
+          </button>
+        </div>
+      </div>
     </aside>
   )
 }

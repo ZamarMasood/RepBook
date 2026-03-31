@@ -2,15 +2,13 @@
 
 import Link from "next/link"
 import { useAppStore } from "@/lib/store"
-import { Card, CardContent } from "@/components/ui/card"
 import {
-  LayoutGrid,
-  FileText,
+  BookOpen,
   Star,
   TrendingUp,
   Plus,
   ChevronRight,
-  Clock,
+  ClipboardList,
 } from "lucide-react"
 
 export function HomePage() {
@@ -18,12 +16,10 @@ export function HomePage() {
 
   if (!currentUser) return null
 
-  // Calculate stats
+  // Stats
   const totalPlans = classPlans.length
   const totalExercises = exercises.length
   const favorites = classPlans.filter((p) => p.isFavorite).length
-
-  // Get most taught apparatus
   const apparatusCounts = classPlans.reduce(
     (acc, plan) => {
       acc[plan.apparatus] = (acc[plan.apparatus] || 0) + 1
@@ -32,196 +28,329 @@ export function HomePage() {
     {} as Record<string, number>
   )
   const mostTaught =
-    Object.entries(apparatusCounts).sort(([, a], [, b]) => b - a)[0]?.[0] ||
-    "None"
+    Object.entries(apparatusCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || "None"
 
-  // Get time of day greeting
+  // Greeting
   const hour = new Date().getHours()
   const greeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening"
 
+  // Date
+  const today = new Date()
+  const formattedDate = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+
+  const statCards = [
+    { value: totalPlans, label: "Class plan", icon: BookOpen, color: "#2B2B2B" },
+    { value: totalExercises, label: "New Exercises", icon: ClipboardList, color: "#2B2B2B" },
+    { value: favorites, label: "Favourite", icon: Star, color: "#2B2B2B" },
+    { value: mostTaught, label: "Most taught", icon: TrendingUp, color: "#7FAF9B" },
+  ]
+
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl mb-1">
-          <span className="font-normal text-foreground">{greeting}, </span>
-          <span className="font-serif italic text-muted-foreground">
-            {currentUser.firstName}.
+    <div>
+      {/* Greeting */}
+      <div style={{ paddingBottom: 17, borderBottom: "0.8px solid #E0E0E0", marginBottom: 32, display: "flex", flexDirection: "column", gap: 12 }}>
+        <h1 style={{ width: 321, fontSize: 34, fontWeight: 600, margin: 0, lineHeight: "40.8px", letterSpacing: 0, color: "#2B2B2B", fontFamily: "var(--font-roboto), Roboto, sans-serif" }}>
+          {greeting},{" "}
+          <span style={{ color: "#4A6580" }}>
+            {currentUser.firstName}
           </span>
         </h1>
-        <p className="text-muted-foreground">{currentUser.studioName}</p>
+        <p style={{ width: 300, fontSize: 24, color: "#BDBDBD", margin: 0, fontWeight: 400, lineHeight: "28.8px", letterSpacing: 0, fontFamily: "var(--font-roboto), Roboto, sans-serif" }}>
+          {formattedDate}
+        </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-card">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="p-2.5 rounded-lg bg-muted">
-              <LayoutGrid className="h-5 w-5 text-muted-foreground" />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 32 }}>
+        {statCards.map((stat) => (
+          <div
+            key={stat.label}
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderRadius: 16,
+              padding: 24,
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              border: "0.8px solid #E0E0E0",
+              height: 86,
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: "#EDF1F5",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <stat.icon size={16} color="#4A6580" />
             </div>
-            <div>
-              <p className="text-3xl font-semibold text-foreground">
-                {totalPlans}
-              </p>
-              <p className="text-sm text-muted-foreground">Class plans</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+              <span style={{ fontSize: 20, fontWeight: 700, color: stat.color, lineHeight: "20px" }}>
+                {stat.value}
+              </span>
+              <span style={{ fontSize: 12, color: "#828282", fontWeight: 400, lineHeight: "14px" }}>
+                {stat.label}
+              </span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="p-2.5 rounded-lg bg-muted">
-              <FileText className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-3xl font-semibold text-foreground">
-                {totalExercises}
-              </p>
-              <p className="text-sm text-muted-foreground">New exercises</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="p-2.5 rounded-lg bg-muted">
-              <Star className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-3xl font-semibold text-foreground">
-                {favorites}
-              </p>
-              <p className="text-sm text-muted-foreground">Favorites</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card">
-          <CardContent className="flex items-center gap-4 p-5">
-            <div className="p-2.5 rounded-lg bg-muted">
-              <TrendingUp className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-3xl font-semibold text-foreground">
-                {mostTaught}
-              </p>
-              <p className="text-sm text-muted-foreground">Most taught</p>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      {/* Bottom Grid: Recent Plans + Quick Actions */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 20 }}>
         {/* Recent Plans */}
-        <Card className="lg:col-span-2">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">
-                  Recent plans
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Your latest class plans
-                </p>
-              </div>
-              <Link
-                href="/class-plans"
-                className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
-              >
-                View all <ChevronRight className="h-4 w-4" />
-              </Link>
+        <div
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 12,
+            border: "0.8px solid #E0E0E0",
+            padding: "20px 0",
+          }}
+        >
+          {/* Header */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              padding: "0 20px",
+              marginBottom: 16,
+            }}
+          >
+            <div>
+              <h2 style={{ fontSize: 16, fontWeight: 600, color: "#2B2B2B", margin: 0 }}>
+                Recent plan
+              </h2>
+              <p style={{ fontSize: 12, color: "#828282", margin: "2px 0 0 0" }}>
+                Your latest class plans
+              </p>
             </div>
+            <Link
+              href="/class-plans"
+              style={{
+                fontSize: 12,
+                color: "#828282",
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                textDecoration: "none",
+              }}
+            >
+              View all <ChevronRight size={14} color="#828282" />
+            </Link>
+          </div>
 
-            <div className="divide-y divide-border">
-              {classPlans.slice(0, 4).map((plan) => (
-                <Link
-                  key={plan.id}
-                  href={`/class-plans/${plan.id}`}
-                  className="flex items-center gap-4 py-3 hover:bg-muted/50 transition-colors group"
-                >
-                  <div className="p-2 rounded-lg bg-muted">
-                    <LayoutGrid className="h-4 w-4 text-muted-foreground" />
+          {/* Plan Rows */}
+          <div>
+            {classPlans.slice(0, 4).map((plan, index) => (
+              <Link
+                key={plan.id}
+                href={`/class-plans/${plan.id}`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "12px 20px",
+                  textDecoration: "none",
+                  borderTop: index === 0 ? "0.8px solid #F0F0F0" : "none",
+                  borderBottom: "0.8px solid #F0F0F0",
+                  transition: "background-color 0.15s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FAFAFA")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 8,
+                      backgroundColor: "#EDF1F5",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <ClipboardList size={14} color="#4A6580" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: "#2B2B2B", margin: 0 }}>
                       {plan.name}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p style={{ fontSize: 12, color: "#828282", margin: "2px 0 0 0" }}>
                       {plan.apparatus} · {plan.duration}
                     </p>
                   </div>
-                  {plan.isFavorite && (
-                    <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
-                  )}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                </Link>
-              ))}
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Star
+                    size={16}
+                    color={plan.isFavorite ? "#D4A843" : "#BDBDBD"}
+                    fill={plan.isFavorite ? "#D4A843" : "none"}
+                  />
+                  <ChevronRight size={16} color="#BDBDBD" />
+                </div>
+              </Link>
+            ))}
 
-              {classPlans.length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                  No class plans yet. Create your first one!
-                </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            {classPlans.length === 0 && (
+              <p style={{ textAlign: "center", color: "#828282", padding: "32px 0" }}>
+                No class plans yet. Create your first one!
+              </p>
+            )}
+          </div>
+        </div>
 
         {/* Quick Actions */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-foreground">
-                Quick actions
-              </h2>
-              <p className="text-sm text-muted-foreground">Get started quickly</p>
-            </div>
+        <div
+          style={{
+            backgroundColor: "#FFFFFF",
+            borderRadius: 12,
+            border: "0.8px solid #E0E0E0",
+            padding: "20px 0",
+          }}
+        >
+          <div style={{ padding: "0 20px", marginBottom: 16 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: "#2B2B2B", margin: 0 }}>
+              Quick actions
+            </h2>
+            <p style={{ fontSize: 12, color: "#828282", margin: "2px 0 0 0" }}>
+              Get started quickly
+            </p>
+          </div>
 
-            <div className="divide-y divide-border">
-              <Link
-                href="/class-plans/new"
-                className="flex items-center gap-4 py-3 hover:bg-muted/50 transition-colors"
+          <div>
+            {/* Create plan */}
+            <Link
+              href="/class-plans/new"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 20px",
+                textDecoration: "none",
+                borderTop: "0.8px solid #F0F0F0",
+                borderBottom: "0.8px solid #F0F0F0",
+                transition: "background-color 0.15s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FAFAFA")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            >
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  backgroundColor: "#4A6580",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
               >
-                <div className="p-2 rounded-lg bg-primary text-primary-foreground">
-                  <Plus className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">Create plan</p>
-                  <p className="text-sm text-muted-foreground">Build a new class</p>
-                </div>
-              </Link>
+                <Plus size={14} color="#FFFFFF" />
+              </div>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 500, color: "#2B2B2B", margin: 0 }}>
+                  Create plan
+                </p>
+                <p style={{ fontSize: 12, color: "#828282", margin: "2px 0 0 0" }}>
+                  Build a new class
+                </p>
+              </div>
+            </Link>
 
-              <Link
-                href="/exercises"
-                className="flex items-center gap-4 py-3 hover:bg-muted/50 transition-colors"
+            {/* Browse exercises */}
+            <Link
+              href="/exercises"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 20px",
+                textDecoration: "none",
+                borderBottom: "0.8px solid #F0F0F0",
+                transition: "background-color 0.15s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FAFAFA")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            >
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  backgroundColor: "#EDF1F5",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
               >
-                <div className="p-2 rounded-lg bg-muted">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">Browse exercises</p>
-                  <p className="text-sm text-muted-foreground">Explore the library</p>
-                </div>
-              </Link>
+                <BookOpen size={14} color="#4A6580" />
+              </div>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 500, color: "#2B2B2B", margin: 0 }}>
+                  Browse exercises
+                </p>
+                <p style={{ fontSize: 12, color: "#828282", margin: "2px 0 0 0" }}>
+                  Explore the library
+                </p>
+              </div>
+            </Link>
 
-              <Link
-                href="/exercises?add=true"
-                className="flex items-center gap-4 py-3 hover:bg-muted/50 transition-colors"
+            {/* Add exercise */}
+            <Link
+              href="/exercises?add=true"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 20px",
+                textDecoration: "none",
+                borderBottom: "0.8px solid #F0F0F0",
+                transition: "background-color 0.15s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#FAFAFA")}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            >
+              <div
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  backgroundColor: "#EDF1F5",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
               >
-                <div className="p-2 rounded-lg bg-muted">
-                  <Plus className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground">Add exercise</p>
-                  <p className="text-sm text-muted-foreground">
-                    Create custom exercise
-                  </p>
-                </div>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+                <Plus size={14} color="#4A6580" />
+              </div>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 500, color: "#2B2B2B", margin: 0 }}>
+                  Add exercise
+                </p>
+                <p style={{ fontSize: 12, color: "#828282", margin: "2px 0 0 0" }}>
+                  Create custom exercise
+                </p>
+              </div>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -12,9 +12,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "#F5F3F0" }}>
       <AppSidebar />
-      <main className="flex-1 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto" style={{ padding: 60 }}>
+        <div style={{ maxWidth: 987 }}>
+          {children}
+        </div>
+      </main>
     </div>
   )
 }
